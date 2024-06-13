@@ -31,18 +31,24 @@ spec:
               value: elasticsearch
             - name: discovery.type
               value: single-node
+            - name: network.host
+              value: "0.0.0.0"
           volumeMounts:
-            - mountPath: /var/lib/elasticsearch/data
+            - mountPath: /usr/share/elasticsearch/data
               name: elasticsearch-data
           livenessProbe:
-            exec:
-              command:
-                - curl --silent --fail localhost:9200/_cluster/health || exit 1
+            httpGet:
+              path: /_cluster/health
+              port: 9200
+              scheme: HTTP
+            initialDelaySeconds: 10
             failureThreshold: 5
             periodSeconds: 10
             timeoutSeconds: 10
       hostname: elasticsearch
       restartPolicy: Always
+      securityContext:
+        fsGroup: 1000
       volumes:
         - name: elasticsearch-data
           persistentVolumeClaim:
